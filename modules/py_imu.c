@@ -391,6 +391,19 @@ static mp_obj_t py_imu_read_reg(mp_obj_t addr) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(py_imu_read_reg_obj, py_imu_read_reg);
 
+static mp_obj_t py_imu_read_reg_burst(mp_obj_t addr, mp_obj_t len) {
+    error_on_not_ready();
+
+    mp_int_t n = mp_obj_get_int(len);
+    if (n < 1 || n > 6) {
+        mp_raise_ValueError(MP_ERROR_TEXT("len must be between 1 and 6"));
+    }
+    uint8_t buf[6];
+    LSM_FUNC(read_reg) (&dev_ctx, mp_obj_get_int(addr), buf, n);
+    return mp_obj_new_bytes(buf, n);
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(py_imu_read_reg_burst_obj, py_imu_read_reg_burst);
+
 static const mp_rom_map_elem_t globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_imu) },
     { MP_ROM_QSTR(MP_QSTR_acceleration_mg),     MP_ROM_PTR(&py_imu_acceleration_mg_obj) },
@@ -401,6 +414,7 @@ static const mp_rom_map_elem_t globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&py_imu_sleep_obj) },
     { MP_ROM_QSTR(MP_QSTR___write_reg),         MP_ROM_PTR(&py_imu_write_reg_obj) },
     { MP_ROM_QSTR(MP_QSTR___read_reg),          MP_ROM_PTR(&py_imu_read_reg_obj) },
+    { MP_ROM_QSTR(MP_QSTR___read_reg_burst),    MP_ROM_PTR(&py_imu_read_reg_burst_obj) },
 };
 
 static MP_DEFINE_CONST_DICT(globals_dict, globals_dict_table);
