@@ -391,16 +391,15 @@ static mp_obj_t py_imu_read_reg(mp_obj_t addr) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(py_imu_read_reg_obj, py_imu_read_reg);
 
-static mp_obj_t py_imu_read_reg_burst(mp_obj_t addr, mp_obj_t len) {
+static mp_obj_t py_imu_read_reg_burst(mp_obj_t addr, mp_obj_t buf) {
     error_on_not_ready();
 
-    mp_int_t n = mp_obj_get_int(len);
-    if (n < 1 || n > 6) {
-        mp_raise_ValueError(MP_ERROR_TEXT("len must be between 1 and 6"));
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
+    if (bufinfo.len > 0) {
+        LSM_FUNC(read_reg) (&dev_ctx, mp_obj_get_int(addr), bufinfo.buf, bufinfo.len);
     }
-    uint8_t buf[6];
-    LSM_FUNC(read_reg) (&dev_ctx, mp_obj_get_int(addr), buf, n);
-    return mp_obj_new_bytes(buf, n);
+    return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(py_imu_read_reg_burst_obj, py_imu_read_reg_burst);
 
