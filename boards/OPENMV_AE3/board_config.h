@@ -259,7 +259,7 @@ extern unsigned char OMV_BOARD_UID_ADDR[12];    // Unique address.
 
 // IMU SPI bus
 #define OMV_IMU_SPI_ID                  (OMV_SPI4_ID)
-#define OMV_IMU_SPI_BAUDRATE            (500000)
+#define OMV_IMU_SPI_BAUDRATE            (5000000)
 #define OMV_IMU_CHIP_LSM6DSM            (1)
 #define OMV_IMU_X_Y_ROTATION_DEGREES    90
 #define OMV_IMU_MOUNTING_Z_DIRECTION    -1
