@@ -12,6 +12,7 @@
  * redefined here so this user C module does not depend on the DFP include
  * paths being visible to the MicroPython usermod sub-build.
  */
+#include <string.h>
 #include "py/runtime.h"
 #include "py/obj.h"
 
@@ -66,12 +67,20 @@ static mp_obj_t py_refclk_now(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(py_refclk_now_obj, py_refclk_now);
 
-// Return the counter value converted to microseconds (raw ticks / 100 at
-// 100 MHz). Integer division, so sub-us remainder is truncated.
-static mp_obj_t py_refclk_now_us(void) {
-    return mp_obj_new_int_from_ull(refclk_read64() / REFCLK_TICKS_PER_US);
+// Store the counter value converted to microseconds (raw ticks / 100 at
+// 100 MHz) into the supplied buffer. Integer division, so sub-us remainder is
+// truncated; the result is further truncated to uint32 and written to the
+// first 4 bytes of buf (host byte order).
+static mp_obj_t py_refclk_now_us(mp_obj_t buf_in) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+    if (bufinfo.len >= sizeof(uint32_t)) {
+        uint32_t now_us = (uint32_t) (refclk_read64() / REFCLK_TICKS_PER_US);
+        memcpy(bufinfo.buf, &now_us, sizeof(now_us));
+    }
+    return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_0(py_refclk_now_us_obj, py_refclk_now_us);
+static MP_DEFINE_CONST_FUN_OBJ_1(py_refclk_now_us_obj, py_refclk_now_us);
 
 static const mp_rom_map_elem_t refclk_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_refclk) },
