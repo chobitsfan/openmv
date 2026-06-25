@@ -389,8 +389,16 @@ static mp_obj_t py_imu_read_reg(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1 && args[1] != mp_const_none) {
         mp_buffer_info_t bufinfo;
         mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-        if (bufinfo.len > 0) {
-            LSM_FUNC(read_reg) (&dev_ctx, mp_obj_get_int(args[0]), bufinfo.buf, bufinfo.len);
+        size_t len = bufinfo.len;
+        // Optionally cap the read length at max_len bytes.
+        if (n_args > 2 && args[2] != mp_const_none) {
+            size_t max_len = mp_obj_get_int(args[2]);
+            if (max_len < len) {
+                len = max_len;
+            }
+        }
+        if (len > 0) {
+            LSM_FUNC(read_reg) (&dev_ctx, mp_obj_get_int(args[0]), bufinfo.buf, len);
         }
         return mp_const_none;
     }
@@ -399,7 +407,7 @@ static mp_obj_t py_imu_read_reg(size_t n_args, const mp_obj_t *args) {
     LSM_FUNC(read_reg) (&dev_ctx, mp_obj_get_int(args[0]), &v, sizeof(v));
     return mp_obj_new_int(v);
 }
-static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(py_imu_read_reg_obj, 1, 2, py_imu_read_reg);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(py_imu_read_reg_obj, 1, 3, py_imu_read_reg);
 
 static const mp_rom_map_elem_t globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_OBJ_NEW_QSTR(MP_QSTR_imu) },
