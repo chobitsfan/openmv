@@ -67,20 +67,23 @@ static mp_obj_t py_refclk_now(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(py_refclk_now_obj, py_refclk_now);
 
-// Store the counter value converted to microseconds (raw ticks / 100 at
-// 100 MHz) into the supplied buffer. Integer division, so sub-us remainder is
-// truncated; the result is further truncated to uint32 and written to the
-// first 4 bytes of buf (host byte order).
-static mp_obj_t py_refclk_now_us(mp_obj_t buf_in) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    if (bufinfo.len >= sizeof(uint32_t)) {
-        uint32_t now_us = (uint32_t) (refclk_read64() / REFCLK_TICKS_PER_US);
-        memcpy(bufinfo.buf, &now_us, sizeof(now_us));
+// Return the counter value converted to microseconds (raw ticks / 100 at
+// 100 MHz). Integer division, so sub-us remainder is truncated. When a buffer
+// is supplied, the result is further truncated to uint32 and written to the
+// first 4 bytes of buf (host byte order) instead of being returned.
+static mp_obj_t py_refclk_now_us(size_t n_args, const mp_obj_t *args) {
+    uint32_t now_us32 = (uint32_t)(refclk_read64() / REFCLK_TICKS_PER_US);
+    if (n_args > 0 && args[0] != mp_const_none) {
+        mp_buffer_info_t bufinfo;
+        mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_WRITE);
+        if (bufinfo.len >= sizeof(uint32_t)) {
+            memcpy(bufinfo.buf, &now_us32, sizeof(now_us32));
+        }
+        return mp_const_none;
     }
-    return mp_const_none;
+    return mp_obj_new_int_from_uint(now_us32);
 }
-static MP_DEFINE_CONST_FUN_OBJ_1(py_refclk_now_us_obj, py_refclk_now_us);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(py_refclk_now_us_obj, 0, 1, py_refclk_now_us);
 
 static const mp_rom_map_elem_t refclk_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_refclk) },
