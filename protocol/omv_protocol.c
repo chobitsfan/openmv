@@ -905,6 +905,9 @@ void omv_protocol_process(const omv_protocol_packet_t *packet) {
                     omv_protocol_send_status(packet->opcode, packet->channel, OMV_PROTOCOL_STATUS_FAILED);
                 } else {
                     omv_protocol_send_packet(packet->opcode, packet->channel, request->length, data, 0);
+                    if (channel->read_done) {
+                        channel->read_done(channel);
+                    }
                 }
             } else {
                 // NOTE: We can't reuse the packet pointer or its payload after calling send_packet,
@@ -928,6 +931,10 @@ void omv_protocol_process(const omv_protocol_packet_t *packet) {
                     offset += size_rd;
                     uint8_t flags = (length == 0) ? 0 : OMV_PROTOCOL_FLAG_FRAGMENT;
                     omv_protocol_send_packet(opcode, channel_id, size_rd, buffer, flags);
+
+                    if (length == 0 && channel->read_done) {
+                        channel->read_done(channel);
+                    }
                 }
             }
             break;

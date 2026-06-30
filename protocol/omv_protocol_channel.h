@@ -134,6 +134,8 @@ struct omv_protocol_channel {
     int (*read) (const omv_protocol_channel_t *channel, uint32_t offset, size_t size, void *data);
     int (*write) (const omv_protocol_channel_t *channel, uint32_t offset, size_t size, const void *data);
     const void *(*readp) (const omv_protocol_channel_t *channel, uint32_t offset, size_t size);
+    // Called once a whole read request is complete (after all data has been sent).
+    void (*read_done) (const omv_protocol_channel_t *channel);
     int (*flush) (const omv_protocol_channel_t *channel);
     int (*ioctl) (const omv_protocol_channel_t *channel, uint32_t cmd, size_t len, void *arg);
     // Stdin-specific function to execute scripts internall (not exposed via ioctl).
