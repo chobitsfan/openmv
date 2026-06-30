@@ -213,6 +213,12 @@ static const void *py_channel_readp(const omv_protocol_channel_t *channel, uint3
     return NULL;
 }
 
+// Read-done delegate - notifies Python that a whole read request is complete
+static void py_channel_read_done(const omv_protocol_channel_t *channel) {
+    mp_obj_t obj = MP_OBJ_FROM_PTR(channel->priv);
+    py_channel_call(obj, MP_QSTR_read_done, 0, NULL);
+}
+
 // Ioctl delegate - passes command and data to Python
 static int py_channel_ioctl(const omv_protocol_channel_t *channel, uint32_t cmd, size_t len, void *arg) {
     mp_obj_t obj = MP_OBJ_FROM_PTR(channel->priv);
@@ -398,6 +404,7 @@ static mp_obj_t py_protocol_register(size_t n_args, const mp_obj_t *pos_args, mp
     channel->read = py_channel_has_method(backend, MP_QSTR_read) ? py_channel_read : NULL;
     channel->write = py_channel_has_method(backend, MP_QSTR_write) ? py_channel_write : NULL;
     channel->readp = py_channel_has_method(backend, MP_QSTR_readp) ? py_channel_readp : NULL;
+    channel->read_done = py_channel_has_method(backend, MP_QSTR_read_done) ? py_channel_read_done : NULL;
     channel->flush = py_channel_has_method(backend, MP_QSTR_flush) ? py_channel_flush : NULL;
     channel->ioctl = py_channel_has_method(backend, MP_QSTR_ioctl) ? py_channel_ioctl : NULL;
     channel->is_active = py_channel_has_method(backend, MP_QSTR_is_active) ? py_channel_is_active : NULL;
