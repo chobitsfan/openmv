@@ -50,14 +50,18 @@ static mp_obj_t py_refclk_enable(void) {
 static MP_DEFINE_CONST_FUN_OBJ_0(py_refclk_enable_obj, py_refclk_enable);
 
 // Read the full 64-bit counter with a hi-lo-hi atomic snapshot across the two
-// 32-bit reads. Only touches the read block (0x1A210000).
+// 32-bit reads. Only touches the read block (0x1A210000). At 100 MHz the low
+// word wraps every ~43 s, so at most one high-word carry can land inside the
+// read window; one conditional re-read is enough (no unbounded retry loop).
 static uint64_t refclk_read64(void) {
-    uint32_t hi, lo, hi2;
-    do {
-        hi = REFCLK_CNTRead->CNTCVH;
+    uint32_t hi = REFCLK_CNTRead->CNTCVH;
+    uint32_t lo = REFCLK_CNTRead->CNTCVL;
+    uint32_t hi2 = REFCLK_CNTRead->CNTCVH;
+    if (hi != hi2) {
+        // A carry hit between the reads; re-read lo so it pairs with hi2.
         lo = REFCLK_CNTRead->CNTCVL;
-        hi2 = REFCLK_CNTRead->CNTCVH;
-    } while (hi != hi2);
+        hi = hi2;
+    }
     return ((uint64_t) hi << 32) | lo;
 }
 
