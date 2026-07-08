@@ -458,8 +458,8 @@ void py_imu_init() {
 
     LSM_FUNC(block_data_update_set) (&dev_ctx, PROPERTY_ENABLE);
 
-    LSM_FUNC(xl_data_rate_set) (&dev_ctx, LSM_CONST(XL_ODR_52Hz));
-    LSM_FUNC(gy_data_rate_set) (&dev_ctx, LSM_CONST(GY_ODR_52Hz));
+    LSM_FUNC(xl_data_rate_set) (&dev_ctx, LSM_CONST(XL_ODR_208Hz));
+    LSM_FUNC(gy_data_rate_set) (&dev_ctx, LSM_CONST(GY_ODR_208Hz));
 
     LSM_FUNC(xl_full_scale_set) (&dev_ctx, LSM_CONST(8g));
     LSM_FUNC(gy_full_scale_set) (&dev_ctx, LSM_CONST(2000dps));
