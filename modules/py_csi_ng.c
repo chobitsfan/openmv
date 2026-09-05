@@ -193,12 +193,13 @@ static mp_obj_t py_csi_flush(mp_obj_t self_in) {
 static MP_DEFINE_CONST_FUN_OBJ_1(py_csi_flush_obj, py_csi_flush);
 
 static mp_obj_t py_csi_snapshot(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_time, ARG_frames, ARG_blocking, ARG_image };
+    enum { ARG_time, ARG_frames, ARG_blocking, ARG_image, ARG_fsync };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_time, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_frames, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = -1} },
         { MP_QSTR_blocking, MP_ARG_BOOL | MP_ARG_KW_ONLY,  {.u_bool = true} },
         { MP_QSTR_image, MP_ARG_OBJ | MP_ARG_KW_ONLY,  {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_fsync, MP_ARG_BOOL | MP_ARG_KW_ONLY,  {.u_bool = true} },
     };
 
     py_csi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -212,6 +213,11 @@ static mp_obj_t py_csi_snapshot(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     if (!args[ARG_blocking].u_bool) {
         flags |= OMV_CSI_FLAG_NON_BLOCK;
+    }
+
+    // Leave FSYNC alone so the sensor is not re-triggered by this call.
+    if (!args[ARG_fsync].u_bool) {
+        flags |= OMV_CSI_FLAG_NO_FSYNC;
     }
 
     if (time == -1 && frames == -1) {

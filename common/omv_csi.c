@@ -1674,8 +1674,8 @@ __weak int omv_csi_snapshot(omv_csi_t *csi, image_t *image, uint32_t flags) {
         framebuffer_release(csi->fb, FB_FLAG_USED | FB_FLAG_INVALIDATE);
     }
 
-    // Toggle FSYNC.
-    if (csi->fsync_pin) {
+    // Toggle FSYNC, unless the caller drives it manually (see omv_csi_set_fsync).
+    if (csi->fsync_pin && !(flags & OMV_CSI_FLAG_NO_FSYNC)) {
         omv_gpio_write(csi->fsync_pin, 1);
     }
 
@@ -1683,7 +1683,7 @@ __weak int omv_csi_snapshot(omv_csi_t *csi, image_t *image, uint32_t flags) {
     int ret = csi->snapshot(csi, image, flags);
 
     // Toggle FSYNC.
-    if (csi->fsync_pin) {
+    if (csi->fsync_pin && !(flags & OMV_CSI_FLAG_NO_FSYNC)) {
         omv_gpio_write(csi->fsync_pin, 0);
     }
 
