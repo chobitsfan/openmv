@@ -614,6 +614,13 @@ int omv_csi_auto_crop_framebuffer(omv_csi_t *csi);
 // DMA-accelerated, if available, and falls back to slow software if not.
 int omv_csi_copy_line(omv_csi_t *csi, void *dma, uint8_t *src, uint8_t *dst);
 
+// Drive the frame sync (FSYNC) pin. Used to manually trigger a sensor that
+// was placed in triggered mode, instead of letting omv_csi_snapshot pulse it.
+int omv_csi_set_fsync(omv_csi_t *csi, bool value);
+
+// Read back the frame sync (FSYNC) pin state.
+int omv_csi_get_fsync(omv_csi_t *csi, bool *value);
+
 // Default snapshot function.
 int omv_csi_snapshot(omv_csi_t *csi, image_t *image, uint32_t flags);
 

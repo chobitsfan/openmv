@@ -1638,6 +1638,22 @@ __weak int omv_csi_copy_line(omv_csi_t *csi, void *dma, uint8_t *src, uint8_t *d
     return 0;
 }
 
+__weak int omv_csi_set_fsync(omv_csi_t *csi, bool value) {
+    if (!csi->fsync_pin) {
+        return OMV_CSI_ERROR_CTL_UNSUPPORTED;
+    }
+    omv_gpio_write(csi->fsync_pin, value);
+    return 0;
+}
+
+__weak int omv_csi_get_fsync(omv_csi_t *csi, bool *value) {
+    if (!csi->fsync_pin) {
+        return OMV_CSI_ERROR_CTL_UNSUPPORTED;
+    }
+    *value = omv_gpio_read(csi->fsync_pin);
+    return 0;
+}
+
 __weak int omv_csi_snapshot(omv_csi_t *csi, image_t *image, uint32_t flags) {
     vbuffer_t *buffer = NULL;
 

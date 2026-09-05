@@ -289,6 +289,27 @@ static mp_obj_t py_csi_cid(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(py_csi_cid_obj, py_csi_cid);
 
+static mp_obj_t py_csi_fsync(size_t n_args, const mp_obj_t *args) {
+    py_csi_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (n_args == 1) {
+        bool value = false;
+        int error = omv_csi_get_fsync(self->csi, &value);
+        if (error != 0) {
+            omv_csi_raise_error(error);
+        }
+        return mp_obj_new_bool(value);
+    }
+
+    int error = omv_csi_set_fsync(self->csi, mp_obj_is_true(args[1]));
+    if (error != 0) {
+        omv_csi_raise_error(error);
+    }
+
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(py_csi_fsync_obj, 1, 2, py_csi_fsync);
+
 static mp_obj_t py_csi_readable(mp_obj_t self_in) {
     py_csi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     framebuffer_t *fb = self->csi->fb;
@@ -1444,6 +1465,7 @@ static const mp_rom_map_elem_t py_csi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_height),              MP_ROM_PTR(&py_csi_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_cid),                 MP_ROM_PTR(&py_csi_cid_obj) },
     { MP_ROM_QSTR(MP_QSTR_readable),            MP_ROM_PTR(&py_csi_readable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_fsync),               MP_ROM_PTR(&py_csi_fsync_obj) },
     { MP_ROM_QSTR(MP_QSTR_pixformat),           MP_ROM_PTR(&py_csi_pixformat_obj) },
     { MP_ROM_QSTR(MP_QSTR_framesize),           MP_ROM_PTR(&py_csi_framesize_obj) },
     { MP_ROM_QSTR(MP_QSTR_framerate),           MP_ROM_PTR(&py_csi_framerate_obj) },
