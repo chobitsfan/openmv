@@ -313,8 +313,22 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(py_csi_fsync_obj, 1, 2, py_csi_fsync)
 static mp_obj_t py_csi_readable(mp_obj_t self_in) {
     py_csi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     framebuffer_t *fb = self->csi->fb;
+    size_t count = queue_size(fb->used_queue);
 
-    return mp_obj_new_bool(framebuffer_readable(fb));
+    // The head of the used queue may still be the buffer returned by the previous
+    // snapshot(), which is not released until the next snapshot() call. Skip it so
+    // an already consumed frame is not reported as new. With less than 3 buffers the
+    // driver recycles the last free buffer instead of queueing it (see
+    // framebuffer_release), so nothing can ever queue behind the held buffer and the
+    // count is left alone there, otherwise this would never report a frame again.
+    if (fb->buf_count >= 3) {
+        vbuffer_t *buffer = framebuffer_acquire(fb, FB_FLAG_USED | FB_FLAG_PEEK);
+        if (buffer && (buffer->flags & VB_FLAG_USED)) {
+            count--;
+        }
+    }
+
+    return mp_obj_new_bool(count != 0);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(py_csi_readable_obj, py_csi_readable);
 
